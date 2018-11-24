@@ -48,6 +48,7 @@ spec:
         - name: xtables
           hostPath:
             path: /run/xtables.lock
+            type: FileOrCreate
       {{- range .Values.agent.extraHostPathMounts }}
         - name: {{ .name }}
           hostPath:
