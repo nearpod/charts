@@ -20,9 +20,15 @@ spec:
       {{- end }}
   template:
     metadata:
-      {{- if .Values.agent.podAnnotations }}
+      {{- if or .Values.agent.podAnnotations .Values.agent.prometheus.scrape }}
       annotations:
+      {{- if .Values.agent.podAnnotations }}
 {{ toYaml .Values.agent.podAnnotations | indent 8 }}
+      {{- end }}
+      {{- if .Values.agent.prometheus.scrape }}
+        prometheus.io/scrape: "{{.Values.agent.prometheus.scrape}}"
+        prometheus.io/port: "{{.Values.agent.prometheus.port}}"
+      {{- end }}
       {{- end }}
       labels:
         app: {{ template "kiam.name" . }}
