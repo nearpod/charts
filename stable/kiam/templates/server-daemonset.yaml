@@ -17,9 +17,15 @@ spec:
       release: {{ .Release.Name }}
   template:
     metadata:
-      {{- if .Values.server.podAnnotations }}
+      {{- if or .Values.server.podAnnotations .Values.server.prometheus.scrape }}
       annotations:
+      {{- if .Values.server.podAnnotations }}
 {{ toYaml .Values.server.podAnnotations | indent 8 }}
+      {{- end }}
+      {{- if .Values.server.prometheus.scrape }}
+        prometheus.io/scrape: "{{.Values.server.prometheus.scrape}}"
+        prometheus.io/port: "{{.Values.server.prometheus.port}}"
+      {{- end }}
       {{- end }}
       labels:
         app: {{ template "kiam.name" . }}
