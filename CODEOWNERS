@@ -1,0 +1,5 @@
+
+
+# By default only infra can review and merge PR's
+* @nearpod/infra @jeckhart
+
