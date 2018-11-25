@@ -20,9 +20,15 @@ spec:
       {{- end }}
   template:
     metadata:
-      {{- if .Values.agent.podAnnotations }}
+      {{- if or .Values.agent.podAnnotations .Values.agent.prometheus.scrape }}
       annotations:
+      {{- if .Values.agent.podAnnotations }}
 {{ toYaml .Values.agent.podAnnotations | indent 8 }}
+      {{- end }}
+      {{- if .Values.agent.prometheus.scrape }}
+        prometheus.io/scrape: "{{.Values.agent.prometheus.scrape}}"
+        prometheus.io/port: "{{.Values.agent.prometheus.port}}"
+      {{- end }}
       {{- end }}
       labels:
         app: {{ template "kiam.name" . }}
@@ -44,10 +50,11 @@ spec:
       volumes:
         - name: tls
           secret:
-            secretName: {{ template "kiam.fullname" . }}-agent
+            secretName: {{ template "kiam.server.secretName" . }}
         - name: xtables
           hostPath:
             path: /run/xtables.lock
+            type: FileOrCreate
       {{- range .Values.agent.extraHostPathMounts }}
         - name: {{ .name }}
           hostPath:
@@ -57,7 +64,8 @@ spec:
         - name: {{ template "kiam.name" . }}-{{ .Values.agent.name }}
         {{- if .Values.agent.host.iptables }}
           securityContext:
-            privileged: true
+            capabilities:
+              add: ["NET_ADMIN"]
         {{- end }}
           image: "{{ .Values.agent.image.repository }}:{{ .Values.agent.image.tag }}"
           imagePullPolicy: {{ .Values.agent.image.pullPolicy }}
